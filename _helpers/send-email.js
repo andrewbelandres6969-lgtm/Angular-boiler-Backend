@@ -27,8 +27,13 @@ async function sendEmail({ to, subject, html, from = process.env.EMAIL_FROM, fro
     message.subject = subject;
     message.htmlContent = html;
 
-console.log('EMAIL_FROM value:', from);
-console.log('Message sender:', JSON.stringify(message.sender));
+    console.log('Sending email', {
+        to,
+        from,
+        subject,
+        fromName: fromName || '',
+        hasBrevoApiKey: !!process.env.BREVO_API_KEY,
+    });
 
     try {
         const response = await apiInstance.sendTransacEmail(message);

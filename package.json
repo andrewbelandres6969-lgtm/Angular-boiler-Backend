@@ -4,7 +4,7 @@
   "description": "Node.js + MySQL backend for the Angular 21 auth boilerplate (sign-up, email verification, JWT + refresh tokens, role-based authorization, forgot/reset password).",
   "repository": {
     "type": "git",
-    "url": "https://github.com/revzespinosa-bot/Angular-boiler-plate-21.git"
+    "url": "https://github.com/andrewbelandres6969-lgtm/Angular-boiler-Backend.git"
   },
   "main": "server.js",
   "scripts": {
