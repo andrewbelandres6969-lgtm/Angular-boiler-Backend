@@ -11,23 +11,10 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-// HARD-CODE your actual frontend URL here
-const allowedOrigins = [
-    'https://angular-plate-frontend.vercel.app',
-    'http://localhost:4200'
-];
-
+// TEMPORARY CORS FIX
+// This reflects the requesting origin and allows credentials/cookies.
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-
-        console.log('Blocked by CORS:', origin);
-        return callback(null, false);
-    },
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -41,6 +28,14 @@ app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Test route
+app.get('/', (req, res) => {
+    res.json({
+        message: 'Backend is running',
+        origin: req.headers.origin || null
+    });
+});
 
 // API routes
 app.use('/accounts', require('./accounts/accounts.controller'));
