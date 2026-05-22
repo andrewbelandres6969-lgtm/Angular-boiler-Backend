@@ -9,18 +9,16 @@ const errorHandler = require('./_middleware/error-handler');
 
 const app = express();
 
-// Render runs behind a proxy
 app.set('trust proxy', 1);
 
-// CORS — specific origin only because credentials/cookies are used
-const allowedOrigins = (process.env.CORS_ORIGIN || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
+// HARD-CODE your actual frontend URL here
+const allowedOrigins = [
+    'https://angular-plate-frontend.vercel.app',
+    'http://localhost:4200'
+];
 
 const corsOptions = {
     origin: function (origin, callback) {
-        // Allow no-origin requests like Postman, curl, server-to-server
         if (!origin) return callback(null, true);
 
         if (allowedOrigins.includes(origin)) {
@@ -28,7 +26,7 @@ const corsOptions = {
         }
 
         console.log('Blocked by CORS:', origin);
-        return callback(new Error('CORS policy: origin not allowed'), false);
+        return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -36,6 +34,7 @@ const corsOptions = {
     optionsSuccessStatus: 204
 };
 
+// CORS must be before routes
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
