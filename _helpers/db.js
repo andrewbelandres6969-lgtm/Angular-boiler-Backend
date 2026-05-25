@@ -2,7 +2,7 @@ const { Sequelize } = require('sequelize');
 
 module.exports = db = {};
 
-initialize();
+db.initialized = initialize();
 
 async function initialize() {
     const host = process.env.DB_HOST;
@@ -20,8 +20,15 @@ async function initialize() {
                   minVersion: 'TLSv1.2',
                   rejectUnauthorized: true,
               },
+              connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT || '20000', 10),
           }
-        : {};
+        : {
+              connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT || '20000', 10),
+          };
+
+    if (!host || !user || !database) {
+        throw new Error('Database configuration is incomplete. Expected DB_HOST, DB_USER, DB_NAME, and DB_PASSWORD.');
+    }
 
     const sequelize = new Sequelize(database, user, password, {
         host,
@@ -29,9 +36,16 @@ async function initialize() {
         dialect: 'mysql',
         dialectOptions,
         logging: false,
+        pool: {
+            max: 5,
+            min: 0,
+            acquire: parseInt(process.env.DB_POOL_ACQUIRE || '30000', 10),
+            idle: 10000,
+        },
     });
 
     // init models and add them to the exported db object
+    db.sequelize = sequelize;
     db.Account = require('../accounts/account.model')(sequelize);
     db.RefreshToken = require('../accounts/refresh-token.model')(sequelize);
 
@@ -39,6 +53,7 @@ async function initialize() {
     db.Account.hasMany(db.RefreshToken, { onDelete: 'CASCADE' });
     db.RefreshToken.belongsTo(db.Account);
 
-    // sync all models with database
+    // Fail fast during startup so deployment logs point at DB/network issues clearly.
+    await sequelize.authenticate();
     await sequelize.sync({ alter: true });
 }
